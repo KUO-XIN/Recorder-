@@ -54,11 +54,11 @@
         <audio id="G5" src="Recorder/G5.wav"></audio>
         <audio id="A5" src="Recorder/A5.wav"></audio>
         <audio id="B5" src="Recorder/B5.wav"></audio>
-        <audio id="#C4" src="Recorder/H-C4.wav"></audio>
-        <audio id="#D4" src="Recorder/H-D4.wav"></audio>
-        <audio id="#F4" src="Recorder/H-F4.wav"></audio>
-        <audio id="#G4" src="Recorder/H-G4.wav"></audio>
-        <audio id="#A4" src="Recorder/H-A4.wav"></audio>
+        <audio id="H-C4" src="Recorder/H-C4.wav"></audio>
+        <audio id="H-D4" src="Recorder/H-D4.wav"></audio>
+        <audio id="H-F4" src="Recorder/H-F4.wav"></audio>
+        <audio id="H-G4" src="Recorder/H-G4.wav"></audio>
+        <audio id="H-A4" src="Recorder/H-A4.wav"></audio>
     </div>
 
     <script>
@@ -132,17 +132,17 @@
             if (!l_index && !l_middle && !l_ring && !l_pinky && !l_thumb &&
                 !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky) return 'C4';
             if (l_pinky && !r_index && !r_middle && !r_ring && !r_thumb &&
-                !l_index && !l_middle && !l_ring && !r_pinky && !l_thumb) return fingerState(left, 20, 19, 18) === "straight" ? 'D4' : '#C4';
+                !l_index && !l_middle && !l_ring && !r_pinky && !l_thumb) return fingerState(left, 20, 19, 18) === "straight" ? 'D4' : 'H-C4';
             if (l_ring && l_pinky && !r_index && !r_thumb && !r_middle && !r_ring && !r_pinky &&
-                !l_index && !l_middle && !l_thumb) return fingerState(left, 16, 15, 14) === "straight" ? 'E4' : '#D4';
+                !l_index && !l_middle && !l_thumb) return fingerState(left, 16, 15, 14) === "straight" ? 'E4' : 'H-D4';
             if (l_pinky && l_middle && l_ring && !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky &&
                 !l_index && !l_thumb) return 'F4';
             if (l_pinky && l_index && !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky &&
-                !l_ring && !l_middle && !l_thumb) return '#F4';
-            if (!r_middle && !r_index && !r_thumb && r_ring && r_pinky && !l_index && !l_middle && l_ring && l_pinky) return '#G4';
+                !l_ring && !l_middle && !l_thumb) return 'H-F4';
+            if (!r_middle && !r_index && !r_thumb && r_ring && r_pinky && !l_index && !l_middle && l_ring && l_pinky) return 'H-G4';
             if (!r_middle && !r_index && !r_thumb && !r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'G4';
             if (!r_middle && !r_index && !r_thumb && r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'A4';
-            if (r_middle && !r_index && !r_thumb && !r_ring && r_pinky && !l_index && l_middle && !l_ring && l_pinky && !l_thumb) return '#A4';
+            if (r_middle && !r_index && !r_thumb && !r_ring && r_pinky && !l_index && l_middle && !l_ring && l_pinky && !l_thumb) return 'H-A4';
             if (!r_index && !r_thumb && r_ring && r_pinky && r_middle && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'B4';
             if (r_thumb && !l_index && !l_middle && !l_ring && !l_pinky &&
                 !r_index && !r_middle && !r_ring && !r_pinky) return 'C5';
@@ -205,4 +205,5 @@
     </script>
 </body>
 </html>
+
 
