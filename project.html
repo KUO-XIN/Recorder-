@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Hand Music Demo</title>
+
+    <!-- MediaPipe CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <style>
+        video, canvas {
+            position: absolute;
+            width: 640px;
+            height: 480px;
+            transform: scaleX(-1);
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            padding: 5px 10px;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <div id="info">
+        左手: - <br>
+        右手: - <br>
+        音符: -
+    </div>
+
+    <!-- 隱藏音符播放器 -->
+    <div id="audioContainer" style="display:none;">
+        <audio id="C4" src="Recorder/C4.wav"></audio>
+        <audio id="D4" src="Recorder/D4.wav"></audio>
+        <audio id="E4" src="Recorder/E4.wav"></audio>
+        <audio id="F4" src="Recorder/F4.wav"></audio>
+        <audio id="G4" src="Recorder/G4.wav"></audio>
+        <audio id="A4" src="Recorder/A4.wav"></audio>
+        <audio id="B4" src="Recorder/B4.wav"></audio>
+        <audio id="C5" src="Recorder/C5.wav"></audio>
+        <audio id="D5" src="Recorder/D5.wav"></audio>
+        <audio id="E5" src="Recorder/E5.wav"></audio>
+        <audio id="F5" src="Recorder/F5.wav"></audio>
+        <audio id="G5" src="Recorder/G5.wav"></audio>
+        <audio id="A5" src="Recorder/A5.wav"></audio>
+        <audio id="B5" src="Recorder/B5.wav"></audio>
+        <audio id="#C4" src="Recorder/H-C4.wav"></audio>
+        <audio id="#D4" src="Recorder/H-D4.wav"></audio>
+        <audio id="#F4" src="Recorder/H-F4.wav"></audio>
+        <audio id="#G4" src="Recorder/H-G4.wav"></audio>
+        <audio id="#A4" src="Recorder/H-A4.wav"></audio>
+    </div>
+
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const infoDiv = document.getElementById("info");
+
+        let currentNote = null;
+        let currentAudio = null;
+
+        function playNote(note) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            if (!note) return;
+
+            const audioElem = document.getElementById(note);
+            if (audioElem) {
+                currentAudio = audioElem;
+                audioElem.play();
+            }
+        }
+
+        const THUMB_TIP = 4, THUMB_IP = 3;
+
+        function fingerUp(handLabel, landmarks, tipIdx, pipIdx) {
+            const tipX = landmarks[tipIdx].x;
+            const pipX = landmarks[pipIdx].x;
+            return handLabel === "Left" ? tipX < pipX : tipX > pipX;
+        }
+
+        function thumbUp(handLabel, landmarks) {
+            return landmarks[THUMB_TIP].y < landmarks[THUMB_IP].y;
+        }
+
+        function fingerAngle(landmarks, tipIdx, dipIdx, pipIdx) {
+            const tip = landmarks[tipIdx], dip = landmarks[dipIdx], pip = landmarks[pipIdx];
+            const vec1 = [tip.x - dip.x, tip.y - dip.y];
+            const vec2 = [pip.x - dip.x, pip.y - dip.y];
+            const dot = vec1[0] * vec2[0] + vec1[1] * vec2[1];
+            const mag1 = Math.hypot(vec1[0], vec1[1]);
+            const mag2 = Math.hypot(vec2[0], vec2[1]);
+            const angle = Math.acos(dot / (mag1 * mag2 + 1e-6));
+            return angle * 180 / Math.PI;
+        }
+
+        function fingerState(landmarks, tipIdx, dipIdx, pipIdx) {
+            const angle = fingerAngle(landmarks, tipIdx, dipIdx, pipIdx);
+            if (angle > 160) return "straight";
+            else if (angle > 40) return "half";
+            return "pressed";
+        }
+
+        function detectNote(left, right) {
+            if (!left || !right) return null;
+
+            const l_thumb = thumbUp("Left", left);
+            const l_index = fingerUp("Left", left, 8, 6);
+            const l_middle = fingerUp("Left", left, 12, 10);
+            const l_ring = fingerUp("Left", left, 16, 14);
+            const l_pinky = fingerUp("Left", left, 20, 18);
+
+            const r_thumb = thumbUp("Right", right);
+            const r_index = fingerUp("Right", right, 8, 6);
+            const r_middle = fingerUp("Right", right, 12, 10);
+            const r_ring = fingerUp("Right", right, 16, 14);
+            const r_pinky = fingerUp("Right", right, 20, 18);
+
+            if (!l_index && !l_middle && !l_ring && !l_pinky && !l_thumb &&
+                !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky) return 'C4';
+            if (l_pinky && !r_index && !r_middle && !r_ring && !r_thumb &&
+                !l_index && !l_middle && !l_ring && !r_pinky && !l_thumb) return fingerState(left, 20, 19, 18) === "straight" ? 'D4' : '#C4';
+            if (l_ring && l_pinky && !r_index && !r_thumb && !r_middle && !r_ring && !r_pinky &&
+                !l_index && !l_middle && !l_thumb) return fingerState(left, 16, 15, 14) === "straight" ? 'E4' : '#D4';
+            if (l_pinky && l_middle && l_ring && !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky &&
+                !l_index && !l_thumb) return 'F4';
+            if (l_pinky && l_index && !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky &&
+                !l_ring && !l_middle && !l_thumb) return '#F4';
+            if (!r_middle && !r_index && !r_thumb && r_ring && r_pinky && !l_index && !l_middle && l_ring && l_pinky) return '#G4';
+            if (!r_middle && !r_index && !r_thumb && !r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'G4';
+            if (!r_middle && !r_index && !r_thumb && r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'A4';
+            if (r_middle && !r_index && !r_thumb && !r_ring && r_pinky && !l_index && l_middle && !l_ring && l_pinky && !l_thumb) return '#A4';
+            if (!r_index && !r_thumb && r_ring && r_pinky && r_middle && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'B4';
+            if (r_thumb && !l_index && !l_middle && !l_ring && !l_pinky &&
+                !r_index && !r_middle && !r_ring && !r_pinky) return 'C5';
+            if (l_pinky && r_thumb && !r_index && !r_middle && !r_ring &&
+                !l_index && !l_middle && !l_ring && !r_pinky && !l_thumb) return 'D5';
+            if (l_ring && l_pinky && r_thumb && !r_index && !r_middle && !r_ring && !r_pinky &&
+                !l_index && !l_middle && !l_thumb) return 'E5';
+            if (l_pinky && l_middle && l_ring && r_thumb && !r_index && !r_middle && !r_ring && !r_pinky &&
+                !l_index && !l_thumb) return 'F5';
+            if (!r_middle && !r_index && r_thumb && !r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'G5';
+            if (!r_middle && !r_index && r_thumb && r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'A5';
+            if (!r_index && r_thumb && r_ring && r_pinky && r_middle && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'B5';
+
+            return null;
+        }
+
+        const hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.7 });
+
+        hands.onResults(results => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+            let leftHand = null, rightHand = null;
+
+            if (results.multiHandLandmarks && results.multiHandedness) {
+                for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+                    const landmarks = results.multiHandLandmarks[i];
+                    const handedness = results.multiHandedness[i];
+                    const label = handedness.label;
+
+                    drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: 'blue', lineWidth: 2 });
+                    drawLandmarks(ctx, landmarks, { color: 'red', radius: 3 });
+
+                    if (label === "Left") rightHand = landmarks;
+                    else if (label === "Right") leftHand = landmarks;
+                }
+            }
+
+            const note = detectNote(leftHand, rightHand);
+
+            infoDiv.innerHTML = `
+                    左手: ${leftHand ? "偵測到" : "沒偵測到"} <br>
+                    右手: ${rightHand ? "偵測到" : "沒偵測到"} <br>
+                    音符: ${note ? note : "無"}
+                `;
+
+            if (note !== currentNote) {
+                currentNote = note;
+                playNote(note);
+            }
+        });
+
+        const camera = new Camera(video, {
+            onFrame: async () => { await hands.send({ image: video }); },
+            width: 640,
+            height: 480
+        });
+        camera.start();
+    </script>
+</body>
+</html>
