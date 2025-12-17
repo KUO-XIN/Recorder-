@@ -109,7 +109,7 @@
 
         function fingerState(landmarks, tipIdx, dipIdx, pipIdx) {
             const angle = fingerAngle(landmarks, tipIdx, dipIdx, pipIdx);
-            if (angle > 160) return "straight";
+            if (angle > 170) return "straight";
             else if (angle > 40) return "half";
             return "pressed";
         }
@@ -205,6 +205,7 @@
     </script>
 </body>
 </html>
+
 
 
 
