@@ -97,14 +97,29 @@
         }
 
         function fingerAngle(landmarks, tipIdx, dipIdx, pipIdx) {
-            const tip = landmarks[tipIdx], dip = landmarks[dipIdx], pip = landmarks[pipIdx];
-            const vec1 = [tip.x - dip.x, tip.y - dip.y];
-            const vec2 = [pip.x - dip.x, pip.y - dip.y];
-            const dot = vec1[0] * vec2[0] + vec1[1] * vec2[1];
-            const mag1 = Math.hypot(vec1[0], vec1[1]);
-            const mag2 = Math.hypot(vec2[0], vec2[1]);
+            const tip = landmarks[tipIdx];
+            const dip = landmarks[dipIdx];
+            const pip = landmarks[pipIdx];
+            // 向量：DIP → TIP、DIP → PIP
+            const v1 = [
+                tip.x - dip.x,
+                tip.y - dip.y,
+                tip.z - dip.z
+            ];
+            const v2 = [
+                pip.x - dip.x,
+                pip.y - dip.y,
+                pip.z - dip.z
+            ];
+            // 內積
+            const dot = v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+            // 向量長度
+            const mag1 = Math.hypot(v1[0], v1[1], v1[2]);
+            const mag2 = Math.hypot(v2[0], v2[1], v2[2]);
+            // 算角度（radian）
             const angle = Math.acos(dot / (mag1 * mag2 + 1e-6));
-            return angle * 180 / Math.PI;
+            // 轉 degree
+            return angle * 180 / Math.PI
         }
 
         function fingerState(landmarks, tipIdx, dipIdx, pipIdx) {
@@ -205,6 +220,7 @@
     </script>
 </body>
 </html>
+
 
 
 
