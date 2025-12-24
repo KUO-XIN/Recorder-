@@ -74,14 +74,14 @@
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.currentTime = 0;
+                currentAudio.loop = false;
             }
-            if (!note) return;
 
-            const audioElem = document.getElementById(note);
-            if (audioElem) {
-                currentAudio = audioElem;
-                audioElem.play();
+            if (!note) {
+                currentAudio = null;
+                return;
             }
+            
             const audioElem = document.getElementById(note);
             if (audioElem) {
                 currentAudio = audioElem;
@@ -234,6 +234,7 @@
     </script>
 </body>
 </html>
+
 
 
 
