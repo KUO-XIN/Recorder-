@@ -82,6 +82,13 @@
                 currentAudio = audioElem;
                 audioElem.play();
             }
+            const audioElem = document.getElementById(note);
+            if (audioElem) {
+                currentAudio = audioElem;
+                audioElem.loop = true;   // 啟用循環
+                audioElem.currentTime = 0;
+                audioElem.play();
+            }
         }
 
         const THUMB_TIP = 4, THUMB_IP = 3;
@@ -209,6 +216,13 @@
                 currentNote = note;
                 playNote(note);
             }
+            if (!note && currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio.loop = false;
+                currentAudio = null;
+                currentNote = null;
+            }
         });
 
         const camera = new Camera(video, {
@@ -220,6 +234,7 @@
     </script>
 </body>
 </html>
+
 
 
 
