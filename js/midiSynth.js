@@ -1,5 +1,5 @@
 // =========================
-// ¤¤­µª½²Ã­·®æ¡]³æ­µ¡^
+// ä¸­éŸ³ç›´ç¬›é¢¨æ ¼ï¼ˆå–®éŸ³ï¼‰
 // =========================
 window.monoSynth = new Tone.Sampler({
     urls: {
@@ -27,7 +27,7 @@ window.monoSynth = new Tone.Sampler({
         "B5": "B5.wav"
     },
 
-    baseUrl: "/Recorder/",
+    baseUrl: "/Recorder-result/",
     attack: 0.01,
     release: 0.35
 }).toDestination();
@@ -43,7 +43,7 @@ window.monoSynth.connect(window.recorderFilter);
 
 
 // =========================
-// ­µ¦W¹ï·Ó
+// éŸ³åå°ç…§
 // =========================
 export const NOTE_TO_MIDI = {
     C4: 60, D4: 62, E4: 64, F4: 65,
@@ -63,13 +63,13 @@ const TONE_NOTE_MAP = {
 };
 
 // =========================
-// ª¬ºAºŞ²z¡]ÃöÁä¡^
+// ç‹€æ…‹ç®¡ç†ï¼ˆé—œéµï¼‰
 // =========================
 let currentNote = null;
 let isPlaying = false;
 
 // =========================
-// °±¤î§j«µ
+// åœæ­¢å¹å¥
 // =========================
 export function stopAllNotes() {
     if (isPlaying) {
@@ -80,7 +80,7 @@ export function stopAllNotes() {
 }
 
 // =========================
-// §j«µª½²Ã
+// å¹å¥ç›´ç¬›
 // =========================
 export function playMIDINotes(note, mouthOpen) {
     if (!mouthOpen || !note) {
@@ -90,12 +90,12 @@ export function playMIDINotes(note, mouthOpen) {
 
     const toneNote = TONE_NOTE_MAP[note] || note;
 
-    // ¦P¤@­Ó­µÁÙ¦b§j ¡÷ ¤£°µ¥ô¦ó¨Æ
+    // åŒä¸€å€‹éŸ³é‚„åœ¨å¹ â†’ ä¸åšä»»ä½•äº‹
     if (isPlaying && currentNote === toneNote) {
         return;
     }
 
-    // ´«­µ¡]¦Xªk¡^
+    // æ›éŸ³ï¼ˆåˆæ³•ï¼‰
     stopAllNotes();
 
     window.monoSynth.triggerAttack(toneNote);
@@ -109,7 +109,7 @@ export function setInstrumentVolume(v) {
     const minDb = -24;
     const maxDb = -4;
 
-    // ®ğ¬y¥­·Æ
+    // æ°£æµå¹³æ»‘
     smoothedVolume = smoothedVolume * 0.8 + v * 0.2;
 
     const curved = Math.pow(smoothedVolume, 1.6);
@@ -117,7 +117,8 @@ export function setInstrumentVolume(v) {
 
     window.monoSynth.volume.value = db;
 
-    // §j¶V±j ¡÷ ¶V«G
+    // å¹è¶Šå¼· â†’ è¶Šäº®
     recorderFilter.frequency.value =
         900 + curved * 2800;
 }
+
