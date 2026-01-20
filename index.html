@@ -1,249 +1,60 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Hand Music Demo</title>
+    <title>Hand + Mouth Music System</title>
 
-    <!-- MediaPipe CDN -->
+    <!-- ---------------- MediaPipe ---------------- -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <!-- ---------------- Tone.js ---------------- -->
+    <script src="https://unpkg.com/tone/build/Tone.js"></script>
 
     <style>
         video, canvas {
             position: absolute;
             width: 720px;
             height: 600px;
-            transform: scaleX(-1);
+            left: 0;
+            top: 0;
+            transform: scaleX(-1); /* 鏡像 */
         }
 
         #info {
             position: absolute;
             top: 10px;
             left: 10px;
-            background-color: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             color: white;
-            padding: 5px 10px;
+            padding: 8px 12px;
             font-size: 18px;
-            border-radius: 5px;
+            border-radius: 6px;
+            z-index: 10;
+            font-family: Arial, sans-serif;
         }
     </style>
 </head>
+
 <body>
+
+    <!-- 攝影機 -->
     <video id="video" autoplay muted playsinline></video>
     <canvas id="canvas" width="720" height="600"></canvas>
+
+    <!-- 狀態顯示 -->
     <div id="info">
-        左手: - <br>
-        右手: - <br>
-        音符: -
+        MOUTH：- <br>
+        NOTE：-
     </div>
 
-    <!-- 隱藏音符播放器 -->
-    <div id="audioContainer" style="display:none;">
-        <audio id="C4" src="Recorder-result/C4.wav"></audio>
-        <audio id="D4" src="Recorder-result/D4.wav"></audio>
-        <audio id="E4" src="Recorder-result/E4.wav"></audio>
-        <audio id="F4" src="Recorder-result/F4.wav"></audio>
-        <audio id="G4" src="Recorder-result/G4.wav"></audio>
-        <audio id="A4" src="Recorder-result/A4.wav"></audio>
-        <audio id="B4" src="Recorder-result/B4.wav"></audio>
-        <audio id="C5" src="Recorder-result/C5.wav"></audio>
-        <audio id="D5" src="Recorder-result/D5.wav"></audio>
-        <audio id="E5" src="Recorder-result/E5.wav"></audio>
-        <audio id="F5" src="Recorder-result/F5.wav"></audio>
-        <audio id="G5" src="Recorder-result/G5.wav"></audio>
-        <audio id="A5" src="Recorder-result/A5.wav"></audio>
-        <audio id="B5" src="Recorder-result/B5.wav"></audio>
-        <audio id="H-C4" src="Recorder-result/H-C4.wav"></audio>
-        <audio id="H-D4" src="Recorder-result/H-D4.wav"></audio>
-        <audio id="H-F4" src="Recorder-result/H-F4.wav"></audio>
-        <audio id="H-G4" src="Recorder-result/H-G4.wav"></audio>
-        <audio id="H-A4" src="Recorder-result/H-A4.wav"></audio>
-    </div>
+    <!-- ---------------- 主程式 ---------------- -->
+    <!-- 用全域 Tone.js，所以 JS 裡不用 import Tone -->
+    <script type="module" src="./js/midiSynth.js"></script>
+    <script type="module" src="./js/harmonyController.js"></script>
+    <script type="module" src="./js/maina.js"></script>
 
-    <script>
-        const video = document.getElementById("video");
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        const infoDiv = document.getElementById("info");
-
-        let currentNote = null;
-        let currentAudio = null;
-
-        function playNote(note) {
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio.loop = false;
-            }
-
-            if (!note) {
-                currentAudio = null;
-                return;
-            }
-            
-            const audioElem = document.getElementById(note);
-            if (audioElem) {
-                currentAudio = audioElem;
-                audioElem.loop = true;   // 啟用循環
-                audioElem.currentTime = 0;
-                audioElem.play();
-            }
-        }
-
-        const THUMB_TIP = 4, THUMB_IP = 3;
-
-        function fingerUp(handLabel, landmarks, tipIdx, pipIdx) {
-            const tipX = landmarks[tipIdx].x;
-            const pipX = landmarks[pipIdx].x;
-            return handLabel === "Left" ? tipX < pipX : tipX > pipX;
-        }
-
-        function thumbUp(handLabel, landmarks) {
-            return landmarks[THUMB_TIP].y < landmarks[THUMB_IP].y;
-        }
-
-        function fingerAngle(landmarks, tipIdx, dipIdx, pipIdx) {
-            const tip = landmarks[tipIdx];
-            const dip = landmarks[dipIdx];
-            const pip = landmarks[pipIdx];
-            // 向量：DIP → TIP、DIP → PIP
-            const v1 = [
-                tip.x - dip.x,
-                tip.y - dip.y,
-                tip.z - dip.z
-            ];
-            const v2 = [
-                pip.x - dip.x,
-                pip.y - dip.y,
-                pip.z - dip.z
-            ];
-            // 內積
-            const dot = v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
-            // 向量長度
-            const mag1 = Math.hypot(v1[0], v1[1], v1[2]);
-            const mag2 = Math.hypot(v2[0], v2[1], v2[2]);
-            // 算角度（radian）
-            const angle = Math.acos(dot / (mag1 * mag2 + 1e-6));
-            // 轉 degree
-            return angle * 180 / Math.PI
-        }
-
-        function fingerState(landmarks, tipIdx, dipIdx, pipIdx) {
-            const angle = fingerAngle(landmarks, tipIdx, dipIdx, pipIdx);
-            if (angle > 160) return "straight";
-            else if (angle > 40) return "half";
-            return "pressed";
-        }
-
-        function detectNote(left, right) {
-            if (!left || !right) return null;
-
-            const l_thumb = thumbUp("Left", left);
-            const l_index = fingerUp("Left", left, 8, 6);
-            const l_middle = fingerUp("Left", left, 12, 10);
-            const l_ring = fingerUp("Left", left, 16, 14);
-            const l_pinky = fingerUp("Left", left, 20, 18);
-
-            const r_thumb = thumbUp("Right", right);
-            const r_index = fingerUp("Right", right, 8, 6);
-            const r_middle = fingerUp("Right", right, 12, 10);
-            const r_ring = fingerUp("Right", right, 16, 14);
-            const r_pinky = fingerUp("Right", right, 20, 18);
-
-            if (!l_index && !l_middle && !l_ring && !l_pinky && !l_thumb &&
-                !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky) return 'C4';
-            if (l_pinky && !r_index && !r_middle && !r_ring && !r_thumb &&
-                !l_index && !l_middle && !l_ring && !r_pinky && !l_thumb) return fingerState(left, 20, 19, 18) === "straight" ? 'D4' : 'H-C4';
-            if (l_ring && l_pinky && !r_index && !r_thumb && !r_middle && !r_ring && !r_pinky &&
-                !l_index && !l_middle && !l_thumb) return fingerState(left, 16, 15, 14) === "straight" ? 'E4' : 'H-D4';
-            if (l_pinky && l_middle && l_ring && !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky &&
-                !l_index && !l_thumb) return 'F4';
-            if (l_pinky && l_index && !r_index && !r_middle && !r_ring && !r_thumb && !r_pinky &&
-                !l_ring && !l_middle && !l_thumb) return 'H-F4';
-            if (!r_middle && !r_index && !r_thumb && r_ring && r_pinky && !l_index && !l_middle && l_ring && l_pinky) return 'H-G4';
-            if (!r_middle && !r_index && !r_thumb && !r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'G4';
-            if (!r_middle && !r_index && !r_thumb && r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'A4';
-            if (r_middle && !r_index && !r_thumb && !r_ring && r_pinky && !l_index && l_middle && !l_ring && l_pinky && !l_thumb) return 'H-A4';
-            if (!r_index && !r_thumb && r_ring && r_pinky && r_middle && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'B4';
-            if (r_thumb && !l_index && !l_middle && !l_ring && !l_pinky &&
-                !r_index && !r_middle && !r_ring && !r_pinky) return 'C5';
-            if (l_pinky && r_thumb && !r_index && !r_middle && !r_ring &&
-                !l_index && !l_middle && !l_ring && !r_pinky && !l_thumb) return 'D5';
-            if (l_ring && l_pinky && r_thumb && !r_index && !r_middle && !r_ring && !r_pinky &&
-                !l_index && !l_middle && !l_thumb) return 'E5';
-            if (l_pinky && l_middle && l_ring && r_thumb && !r_index && !r_middle && !r_ring && !r_pinky &&
-                !l_index && !l_thumb) return 'F5';
-            if (!r_middle && !r_index && r_thumb && !r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'G5';
-            if (!r_middle && !r_index && r_thumb && r_ring && r_pinky && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'A5';
-            if (!r_index && r_thumb && r_ring && r_pinky && r_middle && l_index && l_middle && l_ring && l_pinky && l_thumb) return 'B5';
-
-            return null;
-        }
-
-        const hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.7 });
-
-        hands.onResults(results => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-
-            let leftHand = null, rightHand = null;
-
-            if (results.multiHandLandmarks && results.multiHandedness) {
-                for (let i = 0; i < results.multiHandLandmarks.length; i++) {
-                    const landmarks = results.multiHandLandmarks[i];
-                    const handedness = results.multiHandedness[i];
-                    const label = handedness.label;
-
-                    drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: 'blue', lineWidth: 2 });
-                    drawLandmarks(ctx, landmarks, { color: 'red', radius: 3 });
-
-                    if (label === "Left") rightHand = landmarks;
-                    else if (label === "Right") leftHand = landmarks;
-                }
-            }
-
-            const note = detectNote(leftHand, rightHand);
-
-            infoDiv.innerHTML = `
-                    左手: ${leftHand ? "偵測到" : "沒偵測到"} <br>
-                    右手: ${rightHand ? "偵測到" : "沒偵測到"} <br>
-                    音符: ${note ? note : "無"}
-                `;
-
-            if (note !== currentNote) {
-                currentNote = note;
-                playNote(note);
-            }
-            if (!note && currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio.loop = false;
-                currentAudio = null;
-                currentNote = null;
-            }
-        });
-
-        const camera = new Camera(video, {
-            onFrame: async () => { await hands.send({ image: video }); },
-            width: 640,
-            height: 480
-        });
-        camera.start();
-    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
