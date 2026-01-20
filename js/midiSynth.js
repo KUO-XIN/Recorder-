@@ -27,7 +27,7 @@ window.monoSynth = new Tone.Sampler({
         "B5": "B5.wav"
     },
 
-    baseUrl: "/Recorder-result/",
+    baseUrl: "./Recorder-result/",
     attack: 0.01,
     release: 0.35
 }).toDestination();
@@ -121,5 +121,6 @@ export function setInstrumentVolume(v) {
     recorderFilter.frequency.value =
         900 + curved * 2800;
 }
+
 
 
