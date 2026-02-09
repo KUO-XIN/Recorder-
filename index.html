@@ -8,23 +8,46 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-
+    <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+    <script src="https://unpkg.com/@tonejs/midi/build/Midi.js"></script>
     <!-- ---------------- Tone.js ---------------- -->
     <script src="https://unpkg.com/tone/build/Tone.js"></script>
+    <script>
+        console.log("MIDI global check:", window.MIDI);
+    </script>
+
 
     <style>
-        video, canvas {
-            position: absolute;
-            width: 720px;
-            height: 600px;
-            left: 0;
-            top: 0;
-            transform: scaleX(-1); /* 鏡像 */
+        /* === 整個畫面置中 === */
+        body {
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
         }
 
-        #info {
+        /* 攝影機容器 */
+        #app {
+            position: relative;
+            width: 840px;
+            height: 640px;
+        }
+
+        video, canvas {
             position: absolute;
+            width: 840px;
+            height: 640px;
+            left: 0;
+            top: 0;
+            transform: scaleX(-1);
+        }
+
+        /* 狀態顯示 */
+        #info {
+            position: fixed;
             top: 10px;
             left: 10px;
             background: rgba(0,0,0,0.6);
@@ -35,14 +58,36 @@
             z-index: 10;
             font-family: Arial, sans-serif;
         }
+
+        /* 模式切換 */
+        #modeToggleBtn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+            font-size: 18px;
+            padding: 6px 12px;
+        }
+
+        /* MIDI 上傳按鈕（在模式按鈕下方） */
+        #loadMidiBtn {
+            position: fixed;
+            top: 56px; /* 關鍵：在 modeToggleBtn 下方 */
+            left: 10px;
+            z-index: 20;
+            font-size: 16px;
+            padding: 6px 12px;
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- 攝影機 -->
-    <video id="video" autoplay muted playsinline></video>
-    <canvas id="canvas" width="720" height="600"></canvas>
+    <!-- 攝影機畫面（置中） -->
+    <div id="app">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="canvas" width="840" height="640"></canvas>
+    </div>
 
     <!-- 狀態顯示 -->
     <div id="info">
@@ -50,11 +95,22 @@
         NOTE：-
     </div>
 
+    <button id="loadMidiBtn" style="display:none;">
+        Load MIDI
+    </button>
+
+    <!-- 隱藏的檔案選擇器 -->
+    <input type="file"
+           id="midiFileInput"
+           accept=".mid,.midi"
+           style="display:none" />
+
+    <button id="next">Next Note</button>
+
     <!-- ---------------- 主程式 ---------------- -->
-    <!-- 用全域 Tone.js，所以 JS 裡不用 import Tone -->
     <script type="module" src="./js/midiSynth.js"></script>
+    <script type="module" src="./js/midiplayer.js"></script>
     <script type="module" src="./js/maina.js"></script>
 
 </body>
 </html>
-
