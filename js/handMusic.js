@@ -1,11 +1,11 @@
-/* ---------------- ¤â«ü§PÂ_¤u¨ã ---------------- */
-// §PÂ_ TIP ¬O§_¾aªñ¥t¤@­ÓÂI (¨Ò¦p¤j©æ«ü TIP)
+/* ---------------- æ‰‹æŒ‡åˆ¤æ–·å·¥å…· ---------------- */
+// åˆ¤æ–· TIP æ˜¯å¦é è¿‘å¦ä¸€å€‹é» (ä¾‹å¦‚å¤§æ‹‡æŒ‡ TIP)
 const nearStateMemory = new WeakMap();
 
 /**
- * §PÂ_ tip ¬O§_¡uÃ­©w¦a¡v»·Â÷ refTip
- * - ¦³¶i¥X½w½Ä¡AÁ×§K¶ZÂ÷§İ°Ê³y¦¨¶Ã¸õ
- * - ¤¶­±»P¦^¶Ç­È»P§A­ì¥»§¹¥ş¬Û¦P
+ * åˆ¤æ–· tip æ˜¯å¦ã€Œç©©å®šåœ°ã€é é›¢ refTip
+ * - æœ‰é€²å‡ºç·©è¡ï¼Œé¿å…è·é›¢æŠ–å‹•é€ æˆäº‚è·³
+ * - ä»‹é¢èˆ‡å›å‚³å€¼èˆ‡ä½ åŸæœ¬å®Œå…¨ç›¸åŒ
  */
 export function isNearTip(tip, refTip, threshold = 0.05) {
     if (!tip || !refTip) return false;
@@ -13,13 +13,13 @@ export function isNearTip(tip, refTip, threshold = 0.05) {
     const dx = tip.x - refTip.x;
     const dist = Math.abs(dx);
 
-    // ¨C­Ó tip ª«¥ó¦U¦Û¦³ª¬ºA
+    // æ¯å€‹ tip ç‰©ä»¶å„è‡ªæœ‰ç‹€æ…‹
     let state = nearStateMemory.get(tip);
     if (state === undefined) state = false;
 
-    // ¶i¥X¨Ï¥Î¤£¦PªùÂe¡]hysteresis¡^
-    const enterThreshold = threshold * 1.15; // ­n¡u§ó©ú½T¡v¤~ÅÜ¦¨ true
-    const exitThreshold = threshold * 0.85; // ­n¡u§ó©ú½T¡v¤~ÅÜ¦^ false
+    // é€²å‡ºä½¿ç”¨ä¸åŒé–€æª»ï¼ˆhysteresisï¼‰
+    const enterThreshold = threshold * 1.15; // è¦ã€Œæ›´æ˜ç¢ºã€æ‰è®Šæˆ true
+    const exitThreshold = threshold * 0.85; // è¦ã€Œæ›´æ˜ç¢ºã€æ‰è®Šå› false
 
     if (!state && dist > enterThreshold) {
         state = true;
@@ -69,78 +69,78 @@ export function fingerAngle(landmarks, tipIdx, dipIdx, pipIdx) {
 export function detectNote(left, right) {
     if (!left || !right) return null;
 
-    const l_thumbTip = left[4]; // ¥ª¤â¤j©æ«ü TIP
+    const l_thumbTip = left[4]; // å·¦æ‰‹å¤§æ‹‡æŒ‡ TIP
 
-    // ---------------- ¥ª¤â ----------------
+    // ---------------- å·¦æ‰‹ ----------------
     const l_index = isNearTip(left[8], l_thumbTip);
     const l_middle = isNearTip(left[12], l_thumbTip);
     const l_ring = isNearTip(left[16], l_thumbTip);
     const l_pinky = isNearTip(left[20], l_thumbTip);
 
-    // ---------------- ¥k¤â ----------------
+    // ---------------- å³æ‰‹ ----------------
     const r_index = isNearTip(right[8], l_thumbTip);
     const r_middle = isNearTip(right[12], l_thumbTip);
     const r_ring = isNearTip(right[16], l_thumbTip);
     const r_pinky = isNearTip(right[20], l_thumbTip);
     const r_thumb = thumb_isNearTip(right[4], l_thumbTip);
 
-    // ---------------- ­µ²Å§PÂ_ (C4~B4) ----------------
+    // ---------------- éŸ³ç¬¦åˆ¤æ–· (C4~B4) ----------------
     if (!l_middle && !l_ring && !l_pinky &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) return 'C4';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) return 'C3';
 
     if (l_pinky && !l_middle && !l_ring &&
         !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) {
-        if (fingerAngle(left, 20, 19, 17) > 135) { return 'D4'; }
-        else { return 'H-C4' }
+        if (fingerAngle(left, 20, 19, 17) > 135) { return 'D3'; }
+        else { return 'H-C3' }
     }
 
     if (l_ring && l_pinky && !l_middle &&
         !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) {
-        if (fingerAngle(left, 16, 15, 13) > 135) { return 'E4'; }
-        else { return 'H-D4' }
+        if (fingerAngle(left, 16, 15, 13) > 135) { return 'E3'; }
+        else { return 'H-D3' }
         }
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && !r_thumb) return 'F4';
+        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && !r_thumb) return 'F3';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && !r_thumb) return 'G4';
+        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && !r_thumb) return 'G3';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && r_ring && (r_pinky || l_index) && !r_thumb) return 'A4';
+        !r_index && !r_middle && r_ring && (r_pinky || l_index) && !r_thumb) return 'A3';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && r_middle && r_ring && (r_pinky || l_index) && !r_thumb) return 'B4';
+        !r_index && r_middle && r_ring && (r_pinky || l_index) && !r_thumb) return 'B3';
 
     if (!l_middle && !l_ring && !l_pinky &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'C5';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'C4';
 
     if (l_pinky && !l_middle && !l_ring &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'D5';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'D4';
 
     if (l_ring && l_pinky && !l_middle &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'E5';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'E4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && r_thumb) return 'F5';
+        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && r_thumb) return 'F4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && r_thumb) return 'G5';
+        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && r_thumb) return 'G4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && r_ring && (r_pinky || l_index) && r_thumb) return 'A5';
+        !r_index && !r_middle && r_ring && (r_pinky || l_index) && r_thumb) return 'A4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && r_middle && r_ring && (r_pinky || l_index) && r_thumb) return 'B5';
+        !r_index && r_middle && r_ring && (r_pinky || l_index) && r_thumb) return 'B4';
 
     if (l_pinky && !l_ring && !l_middle &&
-        !r_index && !r_middle && !r_ring && !r_thumb && (r_pinky || l_index)) return 'H-F4';
+        !r_index && !r_middle && !r_ring && !r_thumb && (r_pinky || l_index)) return 'H-F3';
 
     if (!r_middle && !r_index && !r_thumb && r_ring && (r_pinky || !l_index) &&
-        !l_middle && l_ring && l_pinky) return 'H-G4';
+        !l_middle && l_ring && l_pinky) return 'H-G3';
 
     if (r_middle && !r_index && !r_thumb &&
-        !r_ring && (r_pinky || l_index) && l_middle && !l_ring && l_pinky) return 'H-A4';
+        !r_ring && (r_pinky || l_index) && l_middle && !l_ring && l_pinky) return 'H-A3';
 
 
     return null;
