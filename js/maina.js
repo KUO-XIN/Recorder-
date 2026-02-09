@@ -1,22 +1,65 @@
 import { detectNote } from "./handMusic.js";
 import { isMouthOpen, getMouthVolume } from "./mouthDetector.js";
-import { playMIDINotes, stopAllNotes, setInstrumentVolume} from "./midiSynth.js";
+import { playMIDINotes, stopAllNotes, setInstrumentVolume } from "./midiSynth.js";
+import { MIDIPlayer } from "./midiplayer.js";
+import { checkHandGesture } from "./MIDI-hand.js";
+/* ================= 模式定義 ================= */
+const PlayMode = {
+    FREE: "free",
+    MIDI: "midi"
+};
 
+let currentMode = PlayMode.FREE;
+
+/* ================= DOM ================= */
+const midiPlayer = new MIDIPlayer();
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const info = document.getElementById("info");
+const loadMidiBtn = document.getElementById("loadMidiBtn");
+const midiFileInput = document.getElementById("midiFileInput");
 
-/* 同步尺寸 */
+/* ===== 新增模式切換按鈕 ===== */
+const modeToggleBtn = document.createElement("button");
+modeToggleBtn.innerText = "\u6A21\u5F0F\uFF1A\u81EA\u7531\u6F14\u594F";
+modeToggleBtn.style.position = "absolute";
+modeToggleBtn.style.top = "120px";
+modeToggleBtn.style.left = "10px";
+modeToggleBtn.style.zIndex = "20";
+modeToggleBtn.style.fontSize = "18px";
+modeToggleBtn.style.padding = "6px 12px";
+document.body.appendChild(modeToggleBtn);
+
+/* ================= Canvas ================= */
 canvas.width = 720;
 canvas.height = 600;
 
+/* ================= 狀態 ================= */
 let leftHand = null;
 let rightHand = null;
 let faceLandmarks = null;
 let lastThumbX = null;
+let expectedGesture = "-"; 
 
-/* ---------------- Hands ---------------- */
+/* ================= 放入MIDI ================= */
+loadMidiBtn.addEventListener("click", () => {
+    midiFileInput.click();
+});
+
+
+midiFileInput.addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    await midiPlayer.loadFile(file);
+});
+
+document.getElementById("next").onclick = () => {
+    midiPlayer.playNextNote();
+};
+
+/* ================= Hands ================= */
 let hands = new Hands({
     locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
 });
@@ -42,10 +85,8 @@ hands.onResults(results => {
             if (label === "Left") rightHand = landmarks;
             else if (label === "Right") leftHand = landmarks;
 
-            // 只畫手指 TIP
             landmarks.forEach((lm, idx) => {
-                if ([4, 8, 12, 16, 20].includes(idx)) { // TIP index
-                    // === 這裡加平滑 ===
+                if ([4, 8, 12, 16, 20].includes(idx)) {
                     const rawX = lm.x * canvas.width;
                     const rawY = lm.y * canvas.height;
 
@@ -57,7 +98,6 @@ hands.onResults(results => {
 
                     window[`last_${label}_${idx}_x`] = smoothX;
                     window[`last_${label}_${idx}_y`] = smoothY;
-                    // ====================
 
                     ctx.beginPath();
                     ctx.arc(smoothX, smoothY, 6, 0, 2 * Math.PI);
@@ -67,26 +107,23 @@ hands.onResults(results => {
             });
         }
     }
-    if(leftHand && leftHand[4]) {
+
+    if (leftHand && leftHand[4]) {
         const rawX = leftHand[4].x * canvas.width;
-        // 平滑處理
         if (lastThumbX === null) lastThumbX = rawX;
         const smoothX = lastThumbX * 0.7 + rawX * 0.3;
         lastThumbX = smoothX;
 
-        const yStart = 50;
-        const yEnd = canvas.height - 50;
         ctx.beginPath();
-        ctx.moveTo(smoothX, yStart);
-        ctx.lineTo(smoothX, yEnd);
+        ctx.moveTo(smoothX, 50);
+        ctx.lineTo(smoothX, canvas.height - 50);
         ctx.strokeStyle = "white";
         ctx.lineWidth = 4;
         ctx.stroke();
     }
 });
 
-
-/* ---------------- FaceMesh ---------------- */
+/* ================= FaceMesh ================= */
 let faceMesh = new FaceMesh({
     locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
 });
@@ -102,7 +139,7 @@ faceMesh.onResults(results => {
     faceLandmarks = results.multiFaceLandmarks?.[0] || null;
 });
 
-/* ---------------- Camera ---------------- */
+/* ================= Camera ================= */
 const camera = new Camera(video, {
     onFrame: async () => {
         await hands.send({ image: video });
@@ -114,18 +151,108 @@ const camera = new Camera(video, {
 
         setInstrumentVolume(volume);
 
-        if (mouthOpen && note) {
-            playMIDINotes(note, mouthOpen);
+        if (currentMode === PlayMode.FREE) {
+            handleFreePlay(note, mouthOpen);
         } else {
-            stopAllNotes();
+            handleMIDIMode(leftHand, rightHand, mouthOpen);
         }
 
-        info.innerHTML =
-            "MOUTH: " + (mouthOpen ? "OPEN" : "CLOSE") + "<br>" +
-            "NOTE: " + (note ? note : "NONE");
+        if (currentMode === PlayMode.FREE) {
+            info.innerHTML =
+                "MODE: FREE<br>" +
+                "MOUTH: " + (mouthOpen ? "OPEN" : "CLOSE") + "<br>" +
+                "NOTE: " + (note ? note : "NONE");
+        } else {
+            info.innerHTML = "MODE: MIDI<br>" +
+                "GESTURE: " + renderGestureText(expectedGesture);
+        }
     },
     width: 720,
     height: 600
 });
 
 camera.start();
+
+/* ================= 模式切換 ================= */
+modeToggleBtn.addEventListener("click", () => {
+    if (currentMode === PlayMode.FREE) {
+        switchToMIDIMode();
+    } else {
+        switchToFreeMode();
+    }
+});
+
+function switchToFreeMode() {
+    currentMode = PlayMode.FREE;
+    modeToggleBtn.innerText = "\u6A21\u5F0F\uFF1A\u81EA\u7531\u6F14\u594F";
+    loadMidiBtn.style.display = "none";
+    stopAllNotes();
+}
+
+function switchToMIDIMode() {
+    currentMode = PlayMode.MIDI;
+    modeToggleBtn.innerText = "\u6A21\u5F0F\uFF1AMIDI\u6F14\u594F";
+    loadMidiBtn.style.display = "block"; //
+    stopAllNotes();
+    resetMIDIModeState();
+}
+
+/* ================= 播放邏輯 ================= */
+function handleFreePlay(note, mouthOpen) {
+    if (mouthOpen && note) {
+        playMIDINotes(note, mouthOpen);
+    } else {
+        stopAllNotes();
+    }
+}
+
+/* ===== MIDI 模式空殼（之後寫） ===== */
+function handleMIDIMode(leftHand, rightHand, mouthOpen) {
+    if (!leftHand || !rightHand || !midiPlayer.notes.length) return;
+
+    const nextNoteObj = midiPlayer.notes[midiPlayer.currentIndex]; // 下一音
+    if (!nextNoteObj) return;
+
+    // 第一個音特判：currentNote不存在 → 往上播放
+    let currentNoteObj = midiPlayer.notes[midiPlayer.currentIndex - 1];
+    if (!currentNoteObj) {
+        currentNoteObj = { midi: nextNoteObj.midi - 1 }; // 保證第一音可觸發
+    }
+
+    if (nextNoteObj.midi > currentNoteObj.midi) {
+        expectedGesture = "UP";      // 要靠近（上滑）
+    } else if (nextNoteObj.midi < currentNoteObj.midi) {
+        expectedGesture = "DOWN";    // 要遠離（下滑）
+    } else {
+        expectedGesture = "HOLD";    // 不動
+    }
+    const nextReady = checkHandGesture(
+        leftHand,
+        rightHand,
+        currentNoteObj.midi,
+        nextNoteObj.midi
+    );
+
+    if (nextReady) {
+        midiPlayer.playNextNote();
+    }
+}
+
+function resetMIDIModeState() {
+    midiPlayer.stop();
+    midiPlayer.currentIndex = 0;
+    midiPlayer.currentNote = null;
+}
+
+function renderGestureText(gesture) {
+    switch (gesture) {
+        case "UP":
+            return "\u4E0A\u6ED1\uFF08\u9060\u96E2\uFF09";   // 上滑（靠近）
+        case "DOWN":
+            return "\u4E0B\u6ED1\uFF08\u9760\u8FD1\uFF09"; // 下滑（遠離）
+        case "HOLD":
+            return "\u4E0D\u52D5";                         // 不動
+        default:
+            return "-";
+    }
+}
