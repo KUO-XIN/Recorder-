@@ -20,7 +20,7 @@ export class MIDIPlayer {
                 "A4": "A4.wav",
                 "B4": "B4.wav"
             },
-            baseUrl: "./Recorder/",
+            baseUrl: "./Recorder-result/",
             attack: 0.03,
             release: 0.8
         }).connect(this.volume);
@@ -33,10 +33,10 @@ export class MIDIPlayer {
     async loadFile(file) {
         if (!file) return;
 
-        // ¥²¶·¡G¸ÑÂê AudioContext
+        // å¿…é ˆï¼šè§£éŽ– AudioContext
         await Tone.start();
 
-        // °±±¼ÂÂÁn­µ
+        // åœæŽ‰èˆŠè²éŸ³
         this.stop();
 
         this.notes = [];
@@ -45,14 +45,14 @@ export class MIDIPlayer {
         const arrayBuffer = await file.arrayBuffer();
         const midi = new Midi(arrayBuffer);
 
-        // ¦¬¶°©Ò¦³­µ²Å
+        // æ”¶é›†æ‰€æœ‰éŸ³ç¬¦
         midi.tracks.forEach(track => {
             track.notes.forEach(note => {
                 this.notes.push(note);
             });
         });
 
-        // ¨Ì®É¶¡±Æ§Ç
+        // ä¾æ™‚é–“æŽ’åº
         this.notes.sort((a, b) => a.time - b.time);
 
         console.log("MIDI loaded, note count:", this.notes.length);
@@ -63,13 +63,13 @@ export class MIDIPlayer {
 
         const note = this.notes[this.currentIndex];
 
-        // legato¡G©ñ±¼¤W¤@­Ó­µ
+        // legatoï¼šæ”¾æŽ‰ä¸Šä¸€å€‹éŸ³
         if (this.currentNote) {
             this.sampler.triggerRelease(this.currentNote);
         }
 
         this.sampler.triggerAttack(
-            note.name,          // ¨Ò¦p C4, A3
+            note.name,          // ä¾‹å¦‚ C4, A3
             undefined,
             note.velocity
         );
@@ -83,3 +83,4 @@ export class MIDIPlayer {
         this.currentNote = null;
     }
 }
+
