@@ -28,6 +28,7 @@ export class MIDIPlayer {
         this.notes = [];
         this.currentIndex = 0;
         this.currentNote = null;
+        this.gestureTimeline = [];
     }
 
     async loadFile(file) {
@@ -54,6 +55,8 @@ export class MIDIPlayer {
 
         // 依時間排序
         this.notes.sort((a, b) => a.time - b.time);
+
+        this.buildGestureTimeline();
 
         console.log("MIDI loaded, note count:", this.notes.length);
     }
@@ -82,5 +85,52 @@ export class MIDIPlayer {
         this.sampler.releaseAll();
         this.currentNote = null;
     }
-}
 
+    buildGestureTimeline() {
+        this.gestureTimeline = [];
+
+        for (let i = 0; i < this.notes.length; i++) {
+
+            const current = this.notes[i];
+            const prev = this.notes[i - 1];
+
+            let gesture = "LEFT";
+
+            if (prev) {
+
+                const interval = current.midi - prev.midi;
+
+                // 高三度以上 → 右手
+                if (interval >= 3) {
+                    gesture = "RIGHT";
+                }
+
+            }
+
+            this.gestureTimeline.push({
+                index: i,
+                note: current.name,
+                gesture: gesture
+            });
+        }
+    }
+
+    getGestureHints(lookAhead = 3) {
+        const result = [];
+
+        const baseIndex = this.currentIndex - 1;
+
+        for (let i = 0; i < lookAhead; i++) {
+            const g = this.gestureTimeline[baseIndex + i];
+            if (!g) break;
+
+            result.push({
+                gesture: g.gesture,
+                isCurrent: i === 0
+            });
+        }
+
+        return result;
+    }
+
+}
