@@ -40,7 +40,7 @@ let leftHand = null;
 let rightHand = null;
 let faceLandmarks = null;
 let lastThumbX = null;
-let expectedGesture = "-"; 
+let expectedGesture = "LEFT"; 
 
 /* ================= 放入MIDI ================= */
 loadMidiBtn.addEventListener("click", () => {
@@ -53,6 +53,7 @@ midiFileInput.addEventListener("change", async (event) => {
     if (!file) return;
 
     await midiPlayer.loadFile(file);
+    updateGestureHint();
 });
 
 document.getElementById("next").onclick = () => {
@@ -280,3 +281,4 @@ function updateGestureHint() {
         container.appendChild(span);
     });
 }
+
