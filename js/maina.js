@@ -207,34 +207,25 @@ function handleFreePlay(note, mouthOpen) {
 }
 
 /* ===== MIDI 模式空殼（之後寫） ===== */
-function handleMIDIMode(leftHand, rightHand, mouthOpen) {
+function handleMIDIMode(leftHand, rightHand) {
+
     if (!leftHand || !rightHand || !midiPlayer.notes.length) return;
 
-    const nextNoteObj = midiPlayer.notes[midiPlayer.currentIndex]; // 下一音
-    if (!nextNoteObj) return;
+    const nextIndex = midiPlayer.currentIndex;
+    const gestureInfo = midiPlayer.gestureTimeline[nextIndex];
+    if (!gestureInfo) return;
 
-    // 第一個音特判：currentNote不存在 → 往上播放
-    let currentNoteObj = midiPlayer.notes[midiPlayer.currentIndex - 1];
-    if (!currentNoteObj) {
-        currentNoteObj = { midi: nextNoteObj.midi - 1 }; // 保證第一音可觸發
-    }
+    expectedGesture = gestureInfo.gesture;
 
-    if (nextNoteObj.midi > currentNoteObj.midi) {
-        expectedGesture = "UP";      // 要靠近（上滑）
-    } else if (nextNoteObj.midi < currentNoteObj.midi) {
-        expectedGesture = "DOWN";    // 要遠離（下滑）
-    } else {
-        expectedGesture = "HOLD";    // 不動
-    }
     const nextReady = checkHandGesture(
         leftHand,
         rightHand,
-        currentNoteObj.midi,
-        nextNoteObj.midi
+        gestureInfo.gesture
     );
 
     if (nextReady) {
         midiPlayer.playNextNote();
+        updateGestureHint();
     }
 }
 
@@ -246,13 +237,46 @@ function resetMIDIModeState() {
 
 function renderGestureText(gesture) {
     switch (gesture) {
-        case "UP":
-            return "\u4E0A\u6ED1\uFF08\u9060\u96E2\uFF09";   // 上滑（靠近）
-        case "DOWN":
-            return "\u4E0B\u6ED1\uFF08\u9760\u8FD1\uFF09"; // 下滑（遠離）
-        case "HOLD":
-            return "\u4E0D\u52D5";                         // 不動
+        case "LEFT":
+            return "\u5DE6\u624B";  // 左手
+        case "RIGHT":
+            return "\u53F3\u624B";  // 右手
         default:
             return "-";
     }
+}
+
+function gestureToText(gesture) {
+    switch (gesture) {
+        case "LEFT":
+            return "\u5DE6\u624B";
+        case "RIGHT":
+            return "\u53F3\u624B";
+        default:
+            return "";
+    }
+}
+function updateGestureHint() {
+
+    if (currentMode !== PlayMode.MIDI) return;
+
+    const container = document.getElementById("gestureHint");
+    const hints = midiPlayer.getGestureHints(3);
+
+    container.innerHTML = "";
+
+    hints.forEach(h => {
+        const span = document.createElement("span");
+        span.textContent = gestureToText(h.gesture);
+        span.style.marginRight = "14px";
+
+        if (h.isCurrent) {
+            span.style.opacity = "1";
+            span.style.fontWeight = "bold";
+        } else {
+            span.style.opacity = "0.35";
+        }
+
+        container.appendChild(span);
+    });
 }
