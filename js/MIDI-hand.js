@@ -51,7 +51,7 @@ function fingerOpen(handA, handB) {
 
     }
 
-    return openCount >= 1; // 至少兩指開孔
+    return openCount >= 2; // 至少兩指開孔
 }
 
 
@@ -95,3 +95,4 @@ export function checkHandGesture(leftHand, rightHand, expectedGesture) {
 
     return false;
 }
+
