@@ -37,7 +37,7 @@ export function isNearTip(tip, refTip, threshold = 0.05) {
 
 
 // 判斷四指是否開孔
-function fingerOpen(handA, handB) {
+function fingerOpen(handA, thumptip) {
 
     const tips = [8, 12, 16, 20];
 
@@ -45,13 +45,13 @@ function fingerOpen(handA, handB) {
 
     for (let i of tips) {
 
-        if (isNearTip(handA[i], handB[i])) {
+        if (isNearTip(handA[i], thumptip)) {
             openCount++;
         }
 
     }
 
-    return openCount >= 2; // 至少兩指開孔
+    return openCount >= 1; // 至少兩指開孔
 }
 
 
@@ -69,12 +69,12 @@ export function checkHandGesture(leftHand, rightHand, expectedGesture) {
 
     if (expectedGesture === "LEFT") {
 
-        isOpen = fingerOpen(leftHand, rightHand);
+        isOpen = fingerOpen(leftHand, leftHand[4]);
 
     }
     else if (expectedGesture === "RIGHT") {
 
-        isOpen = fingerOpen(rightHand, leftHand);
+        isOpen = fingerOpen(rightHand, rightHand[4]);
 
     }
 
@@ -95,4 +95,3 @@ export function checkHandGesture(leftHand, rightHand, expectedGesture) {
 
     return false;
 }
-
