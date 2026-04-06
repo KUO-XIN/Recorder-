@@ -84,64 +84,81 @@ export function detectNote(left, right) {
     const r_pinky = isNearTip(right[20], l_thumbTip);
     const r_thumb = thumb_isNearTip(right[4], l_thumbTip);
 
+    // 新增：孔狀態（順序你可以之後再調）
+    const holes = [
+        !r_thumb,
+        !r_index,
+        !r_middle,
+        !r_ring,
+        !r_pinky,
+        !l_middle,
+        !l_ring,
+        !l_pinky
+    ];
+
+    let note = null;
+
     // ---------------- 音符判斷 (C4~B4) ----------------
     if (!l_middle && !l_ring && !l_pinky &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) return 'C3';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) note = 'C3';
 
     if (l_pinky && !l_middle && !l_ring &&
         !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) {
-        if (fingerAngle(left, 20, 19, 17) > 135) { return 'D3'; }
-        else { return 'H-C3' }
+        if (fingerAngle(left, 20, 19, 17) > 135) { note = 'D3'; }
+        else { note = 'H-C3' }
     }
 
     if (l_ring && l_pinky && !l_middle &&
         !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) {
-        if (fingerAngle(left, 16, 15, 13) > 135) { return 'E3'; }
-        else { return 'H-D3' }
+        if (fingerAngle(left, 16, 15, 13) > 135) { note = 'E3'; }
+        else { note = 'H-D3' }
         }
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && !r_thumb) return 'F3';
+        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && !r_thumb) note = 'F3';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && !r_thumb) return 'G3';
+        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && !r_thumb) note = 'G3';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && r_ring && (r_pinky || l_index) && !r_thumb) return 'A3';
+        !r_index && !r_middle && r_ring && (r_pinky || l_index) && !r_thumb) note = 'A3';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && r_middle && r_ring && (r_pinky || l_index) && !r_thumb) return 'B3';
+        !r_index && r_middle && r_ring && (r_pinky || l_index) && !r_thumb) note = 'B3';
 
     if (!l_middle && !l_ring && !l_pinky &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'C4';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'C4';
 
     if (l_pinky && !l_middle && !l_ring &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'D4';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'D4';
 
     if (l_ring && l_pinky && !l_middle &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) return 'E4';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'E4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && r_thumb) return 'F4';
+        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && r_thumb) note = 'F4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && r_thumb) return 'G4';
+        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && r_thumb) note = 'G4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && r_ring && (r_pinky || l_index) && r_thumb) return 'A4';
+        !r_index && !r_middle && r_ring && (r_pinky || l_index) && r_thumb) note = 'A4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && r_middle && r_ring && (r_pinky || l_index) && r_thumb) return 'B4';
+        !r_index && r_middle && r_ring && (r_pinky || l_index) && r_thumb) note = 'B4';
 
     if (l_pinky && !l_ring && !l_middle &&
-        !r_index && !r_middle && !r_ring && !r_thumb && (r_pinky || l_index)) return 'H-F3';
+        !r_index && !r_middle && !r_ring && !r_thumb && (r_pinky || l_index)) note = 'H-F3';
 
     if (!r_middle && !r_index && !r_thumb && r_ring && (r_pinky || !l_index) &&
-        !l_middle && l_ring && l_pinky) return 'H-G3';
+        !l_middle && l_ring && l_pinky) note = 'H-G3';
 
     if (r_middle && !r_index && !r_thumb &&
-        !r_ring && (r_pinky || l_index) && l_middle && !l_ring && l_pinky) return 'H-A3';
+        !r_ring && (r_pinky || l_index) && l_middle && !l_ring && l_pinky) note = 'H-A3';
 
-
-    return null;
+    // 最後回傳
+    return {
+        note: note,
+        holes: holes
+    };
 }
