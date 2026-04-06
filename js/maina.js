@@ -146,11 +146,17 @@ const camera = new Camera(video, {
         await hands.send({ image: video });
         await faceMesh.send({ image: video });
 
-        const note = detectNote(leftHand, rightHand);
+        const result = detectNote(leftHand, rightHand);
+        const note = result?.note;
+        const holes = result?.holes;
         const mouthOpen = isMouthOpen(faceLandmarks);
         const volume = getMouthVolume(faceLandmarks);
 
         setInstrumentVolume(volume);
+
+        if (holes) {
+            updateRecorderUI(holes);
+        }
 
         if (currentMode === PlayMode.FREE) {
             handleFreePlay(note, mouthOpen);
@@ -282,3 +288,17 @@ function updateGestureHint() {
     });
 }
 
+function updateRecorderUI(holes) {
+    if (!holes) return;
+
+    for (let i = 0; i < holes.length; i++) {
+        const hole = document.getElementById("h" + i);
+        if (!hole) continue;
+
+        if (holes[i]) {
+            hole.classList.add("active");
+        } else {
+            hole.classList.remove("active");
+        }
+    }
+}
