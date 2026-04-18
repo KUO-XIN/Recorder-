@@ -10,6 +10,7 @@ const PlayMode = {
 };
 
 let currentMode = PlayMode.FREE;
+let lastScale = 1;
 
 /* ================= DOM ================= */
 const midiPlayer = new MIDIPlayer();
@@ -19,6 +20,8 @@ const ctx = canvas.getContext("2d");
 const info = document.getElementById("info");
 const loadMidiBtn = document.getElementById("loadMidiBtn");
 const midiFileInput = document.getElementById("midiFileInput");
+const app = document.getElementById("app");
+const recorder = document.getElementById("recorder");
 
 /* ===== 新增模式切換按鈕 ===== */
 const modeToggleBtn = document.createElement("button");
@@ -40,6 +43,7 @@ let leftHand = null;
 let rightHand = null;
 let faceLandmarks = null;
 let lastThumbX = null;
+let lastThumbY = null;
 let expectedGesture = "LEFT"; 
 
 /* ================= 放入MIDI ================= */
@@ -110,17 +114,34 @@ hands.onResults(results => {
     }
 
     if (leftHand && leftHand[4]) {
-        const rawX = leftHand[4].x * canvas.width;
-        if (lastThumbX === null) lastThumbX = rawX;
-        const smoothX = lastThumbX * 0.7 + rawX * 0.3;
-        lastThumbX = smoothX;
+        const rawX = (1 - leftHand[4].x) * canvas.width;
+        const rawY = leftHand[4].y * canvas.height;
 
-        ctx.beginPath();
-        ctx.moveTo(smoothX, 50);
-        ctx.lineTo(smoothX, canvas.height - 50);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 4;
-        ctx.stroke();
+        if (lastThumbX === null) lastThumbX = rawX;
+        if (lastThumbY === null) lastThumbY = rawY;
+
+        const smoothX = lastThumbX * 0.7 + rawX * 0.3;
+        const smoothY = lastThumbY * 0.7 + rawY * 0.3;
+
+        lastThumbX = smoothX;
+        lastThumbY = smoothY;
+
+        const appRect = app.getBoundingClientRect();
+
+        recorder.style.left = (appRect.left + smoothX) + "px";
+        recorder.style.top = (appRect.top + smoothY - 175) + "px";
+
+        const dx = leftHand[5].x - leftHand[17].x;
+        const dy = leftHand[5].y - leftHand[17].y;
+        const handWidth = Math.sqrt(dx * dx + dy * dy);
+
+        let scale = handWidth * 5;
+
+        // smoothing
+        scale = lastScale * 0.7 + scale * 0.3;
+        lastScale = scale;
+
+        recorder.style.transform = `scale(${scale})`;
     }
 });
 
