@@ -3,7 +3,7 @@
 const nearStateMemory = new Map();
 
 let lastUpdate = 0;
-const MIN_INTERVAL = 120; // 防止過快觸發
+const MIN_INTERVAL = 400; // 防止過快觸發
 
 // 手勢狀態機（避免手指一直開著連續觸發）
 let gestureArmed = true;
@@ -70,29 +70,26 @@ function fingerOpen(handA, thumb) {
 
 
 // 主偵測函式
-export function checkHandGesture(leftHand, rightHand, expectedGesture) {
+export function checkHandGesture(leftHand, rightHand) {
 
     const now = Date.now();
 
     if (now - lastUpdate < MIN_INTERVAL) return false;
 
-    if (!leftHand || !rightHand) return false;
+    if (!leftHand && !rightHand) return false;
 
-    let isOpen = false;
+    let isOpenLeft = false;
+    let isOpenRight = false;
 
-    if (expectedGesture === "LEFT") {
-
-        isOpen = fingerOpen(leftHand, leftHand[4]);
-
-    }
-    else if (expectedGesture === "RIGHT") {
-
-        isOpen = fingerOpen(rightHand, rightHand[4]);
-
+    if (leftHand) {
+        isOpenLeft = fingerOpen(leftHand, leftHand[4]);
     }
 
-    // DEBUG
-    // console.log("gesture:", expectedGesture, "open:", isOpen);
+    if (rightHand) {
+        isOpenRight = fingerOpen(rightHand, rightHand[4]);
+    }
+
+    let isOpen = isOpenLeft || isOpenRight;
 
     if (isOpen && gestureArmed) {
 
