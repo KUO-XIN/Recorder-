@@ -57,7 +57,6 @@ midiFileInput.addEventListener("change", async (event) => {
     if (!file) return;
 
     await midiPlayer.loadFile(file);
-    updateGestureHint();
 });
 
 document.getElementById("next").onclick = () => {
@@ -131,13 +130,35 @@ hands.onResults(results => {
         recorder.style.left = (appRect.left + smoothX) + "px";
         recorder.style.top = (appRect.top + smoothY - 175) + "px";
 
-        const dx = leftHand[5].x - leftHand[17].x;
-        const dy = leftHand[5].y - leftHand[17].y;
-        const handWidth = Math.sqrt(dx * dx + dy * dy);
+        // ===== 修正 scale =====
+        let scale;
 
-        let scale = handWidth * 5;
+        if (rightHand && rightHand[4]) {
 
-        // smoothing
+            // 新方法（上下距離）
+            const top = rightHand[4];
+            const bottom = leftHand[20];
+
+            let dy = Math.abs(top.y - bottom.y);
+
+            scale = dy * 2.1;
+
+        } else {
+
+            //  fallback（你原本的方法）
+            const dx = leftHand[5].x - leftHand[17].x;
+            const handWidth = Math.abs(dx);
+
+            scale = handWidth * 6;
+        }
+
+        //  最後才做 clamp（這樣才有效）
+        const MIN_SCALE = 0.6;
+        const MAX_SCALE = 3.0;
+
+        scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
+
+        // smoothing（保留）
         scale = lastScale * 0.7 + scale * 0.3;
         lastScale = scale;
 
@@ -172,6 +193,7 @@ const camera = new Camera(video, {
         const holes = result?.holes;
         const mouthOpen = isMouthOpen(faceLandmarks);
         const volume = getMouthVolume(faceLandmarks);
+        const currentNote = midiPlayer.notes?.[midiPlayer.currentIndex];
 
         setInstrumentVolume(volume);
 
@@ -191,8 +213,7 @@ const camera = new Camera(video, {
                 "MOUTH: " + (mouthOpen ? "OPEN" : "CLOSE") + "<br>" +
                 "NOTE: " + (note ? note : "NONE");
         } else {
-            info.innerHTML = "MODE: MIDI<br>" +
-                "GESTURE: " + renderGestureText(expectedGesture);
+            info.innerHTML = "MODE: MIDI<br>";
         }
     },
     width: 720,
@@ -237,23 +258,19 @@ function handleFreePlay(note, mouthOpen) {
 /* ===== MIDI 模式空殼（之後寫） ===== */
 function handleMIDIMode(leftHand, rightHand) {
 
-    if (!leftHand || !rightHand || !midiPlayer.notes.length) return;
+    if (!leftHand && !rightHand) return;
+    if (!midiPlayer.notes.length) return;
 
     const nextIndex = midiPlayer.currentIndex;
     const gestureInfo = midiPlayer.gestureTimeline[nextIndex];
     if (!gestureInfo) return;
 
-    expectedGesture = gestureInfo.gesture;
+    // 不再用 expectedGesture
 
-    const nextReady = checkHandGesture(
-        leftHand,
-        rightHand,
-        gestureInfo.gesture
-    );
+    const nextReady = checkHandGesture(leftHand, rightHand);
 
     if (nextReady) {
         midiPlayer.playNextNote();
-        updateGestureHint();
     }
 }
 
@@ -261,52 +278,6 @@ function resetMIDIModeState() {
     midiPlayer.stop();
     midiPlayer.currentIndex = 0;
     midiPlayer.currentNote = null;
-}
-
-function renderGestureText(gesture) {
-    switch (gesture) {
-        case "LEFT":
-            return "\u5DE6\u624B";  // 左手
-        case "RIGHT":
-            return "\u53F3\u624B";  // 右手
-        default:
-            return "-";
-    }
-}
-
-function gestureToText(gesture) {
-    switch (gesture) {
-        case "LEFT":
-            return "\u5DE6\u624B";
-        case "RIGHT":
-            return "\u53F3\u624B";
-        default:
-            return "";
-    }
-}
-function updateGestureHint() {
-
-    if (currentMode !== PlayMode.MIDI) return;
-
-    const container = document.getElementById("gestureHint");
-    const hints = midiPlayer.getGestureHints(3);
-
-    container.innerHTML = "";
-
-    hints.forEach(h => {
-        const span = document.createElement("span");
-        span.textContent = gestureToText(h.gesture);
-        span.style.marginRight = "14px";
-
-        if (h.isCurrent) {
-            span.style.opacity = "1";
-            span.style.fontWeight = "bold";
-        } else {
-            span.style.opacity = "0.35";
-        }
-
-        container.appendChild(span);
-    });
 }
 
 function updateRecorderUI(holes) {
