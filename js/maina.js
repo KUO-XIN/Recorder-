@@ -44,7 +44,6 @@ let rightHand = null;
 let faceLandmarks = null;
 let lastThumbX = null;
 let lastThumbY = null;
-let expectedGesture = "LEFT"; 
 
 /* ================= 放入MIDI ================= */
 loadMidiBtn.addEventListener("click", () => {
@@ -197,14 +196,18 @@ const camera = new Camera(video, {
 
         setInstrumentVolume(volume);
 
+        initHelpUI();
+
         if (holes) {
             updateRecorderUI(holes);
         }
 
         if (currentMode === PlayMode.FREE) {
+            setHelpMode("free");
             handleFreePlay(note, mouthOpen);
         } else {
             handleMIDIMode(leftHand, rightHand, mouthOpen);
+            setHelpMode("midi");
         }
 
         if (currentMode === PlayMode.FREE) {
