@@ -111,6 +111,46 @@
                 background: red;
                 box-shadow: 0 0 15px red;
             }
+        /* ☰ 按鈕 */
+        #menuBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 1000;
+            user-select: none;
+        }
+
+        /* 側邊面板 */
+        #helpPanel {
+            position: fixed;
+            top: 0;
+            right: -300px; /* 預設藏起來 */
+            width: 300px;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+            /* 打開狀態 */
+            #helpPanel.open {
+                right: 0;
+            }
+
+            /* 文字 */
+            #helpPanel h2 {
+                margin-top: 0;
+            }
+
+            #helpPanel p {
+                line-height: 1.6;
+            }
 
     </style>
 </head>
@@ -147,6 +187,14 @@
 
     <div id="gestureHint"></div>
 
+    <!-- ☰ 按鈕 -->
+    <div id="menuBtn">☰</div>
+
+    <!-- 側邊說明面板 -->
+    <div id="helpPanel">
+        <div id="helpContent"></div>
+    </div>
+
     <!-- 隱藏的檔案選擇器 -->
     <input type="file"
            id="midiFileInput"
@@ -156,6 +204,7 @@
     <button id="next">Next Note</button>
 
     <!-- ---------------- 主程式 ---------------- -->
+    <script type="module" src="./js/helpUI.js"></script>
     <script type="module" src="./js/midiSynth.js"></script>
     <script type="module" src="./js/midiplayer.js"></script>
     <script type="module" src="./js/maina.js"></script>
