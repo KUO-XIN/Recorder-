@@ -58,10 +58,6 @@ midiFileInput.addEventListener("change", async (event) => {
     await midiPlayer.loadFile(file);
 });
 
-document.getElementById("next").onclick = () => {
-    midiPlayer.playNextNote();
-};
-
 /* ================= Hands ================= */
 let hands = new Hands({
     locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
