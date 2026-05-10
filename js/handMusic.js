@@ -154,7 +154,7 @@ export function detectNote(left, right) {
         !l_middle && l_ring && l_pinky) note = 'H-G4';
 
     if (r_middle && !r_index && !r_thumb &&
-        !r_ring && (r_pinky || l_index) && l_middle && !l_ring && l_pinky) note = 'H-A4';
+        !r_ring && (!r_pinky || !l_index) && l_middle && !l_ring && l_pinky) note = 'H-A4';
 
     // 最後回傳
     return {
