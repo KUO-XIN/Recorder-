@@ -150,7 +150,7 @@ export function detectNote(left, right) {
     if (l_pinky && !l_ring && !l_middle &&
         !r_index && !r_middle && !r_ring && !r_thumb && (r_pinky || l_index)) note = 'H-F4';
 
-    if (!r_middle && !r_index && !r_thumb && r_ring && (r_pinky || !l_index) &&
+    if (!r_middle && !r_index && !r_thumb && r_ring && (r_pinky || l_index) &&
         !l_middle && l_ring && l_pinky) note = 'H-G4';
 
     if (r_middle && !r_index && !r_thumb &&
