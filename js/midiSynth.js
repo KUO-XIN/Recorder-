@@ -11,7 +11,7 @@ window.monoSynth = new Tone.Sampler({
         "E4": "E4.wav",
         "F4": "F4.wav",
         "F#4": "H-F4.wav",
-        "G4": "G3.wav",
+        "G4": "G4.wav",
         "G#4": "H-G4.wav",
         "A4": "A4.wav",
         "A#4": "H-A4.wav",
