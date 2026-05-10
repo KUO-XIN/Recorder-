@@ -238,6 +238,7 @@ function switchToFreeMode() {
     currentMode = PlayMode.FREE;
     modeToggleBtn.innerText = "\u6A21\u5F0F\uFF1A\u81EA\u7531\u6F14\u594F";
     loadMidiBtn.style.display = "none";
+    nextBtn.style.display = "none"; 
     stopAllNotes();
 }
 
@@ -245,6 +246,7 @@ function switchToMIDIMode() {
     currentMode = PlayMode.MIDI;
     modeToggleBtn.innerText = "\u6A21\u5F0F\uFF1AMIDI\u6F14\u594F";
     loadMidiBtn.style.display = "block"; //
+    nextBtn.style.display = "block"; 
     stopAllNotes();
     resetMIDIModeState();
 }
