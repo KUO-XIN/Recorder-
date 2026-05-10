@@ -100,61 +100,61 @@ export function detectNote(left, right) {
 
     // ---------------- 音符判斷 (C4~B4) ----------------
     if (!l_middle && !l_ring && !l_pinky &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) note = 'C3';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) note = 'C4';
 
     if (l_pinky && !l_middle && !l_ring &&
         !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) {
-        if (fingerAngle(left, 20, 19, 17) > 135) { note = 'D3'; }
-        else { note = 'H-C3' }
+        if (fingerAngle(left, 20, 19, 17) > 135) { note = 'D4'; }
+        else { note = 'H-C4' }
     }
 
     if (l_ring && l_pinky && !l_middle &&
         !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && !r_thumb) {
-        if (fingerAngle(left, 16, 15, 13) > 135) { note = 'E3'; }
-        else { note = 'H-D3' }
+        if (fingerAngle(left, 16, 15, 13) > 135) { note = 'E4'; }
+        else { note = 'H-D4' }
         }
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && !r_thumb) note = 'F3';
+        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && !r_thumb) note = 'F4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && !r_thumb) note = 'G3';
+        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && !r_thumb) note = 'G4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && r_ring && (r_pinky || l_index) && !r_thumb) note = 'A3';
+        !r_index && !r_middle && r_ring && (r_pinky || l_index) && !r_thumb) note = 'A4';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && r_middle && r_ring && (r_pinky || l_index) && !r_thumb) note = 'B3';
+        !r_index && r_middle && r_ring && (r_pinky || l_index) && !r_thumb) note = 'B4';
 
     if (!l_middle && !l_ring && !l_pinky &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'C4';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'C5';
 
     if (l_pinky && !l_middle && !l_ring &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'D4';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'D5';
 
     if (l_ring && l_pinky && !l_middle &&
-        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'E4';
+        !r_index && !r_middle && !r_ring && (!r_pinky || !l_index) && r_thumb) note = 'E5';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && r_thumb) note = 'F4';
+        !r_index && !r_middle && !r_ring && !r_pinky && !l_index && r_thumb) note = 'F5';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && r_thumb) note = 'G4';
+        !r_index && !r_middle && !r_ring && (r_pinky || l_index) && r_thumb) note = 'G5';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && !r_middle && r_ring && (r_pinky || l_index) && r_thumb) note = 'A4';
+        !r_index && !r_middle && r_ring && (r_pinky || l_index) && r_thumb) note = 'A5';
 
     if (l_middle && l_ring && l_pinky &&
-        !r_index && r_middle && r_ring && (r_pinky || l_index) && r_thumb) note = 'B4';
+        !r_index && r_middle && r_ring && (r_pinky || l_index) && r_thumb) note = 'B5';
 
     if (l_pinky && !l_ring && !l_middle &&
-        !r_index && !r_middle && !r_ring && !r_thumb && (r_pinky || l_index)) note = 'H-F3';
+        !r_index && !r_middle && !r_ring && !r_thumb && (r_pinky || l_index)) note = 'H-F4';
 
     if (!r_middle && !r_index && !r_thumb && r_ring && (r_pinky || !l_index) &&
-        !l_middle && l_ring && l_pinky) note = 'H-G3';
+        !l_middle && l_ring && l_pinky) note = 'H-G4';
 
     if (r_middle && !r_index && !r_thumb &&
-        !r_ring && (r_pinky || l_index) && l_middle && !l_ring && l_pinky) note = 'H-A3';
+        !r_ring && (r_pinky || l_index) && l_middle && !l_ring && l_pinky) note = 'H-A4';
 
     // 最後回傳
     return {
