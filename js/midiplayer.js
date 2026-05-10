@@ -5,20 +5,20 @@ export class MIDIPlayer {
 
         this.sampler = new Tone.Sampler({
             urls: {
-                "C3": "C3.wav",
-                "D3": "D3.wav",
-                "E3": "E3.wav",
-                "F3": "F3.wav",
-                "G3": "G3.wav",
-                "A3": "A3.wav",
-                "B3": "B3.wav",
                 "C4": "C4.wav",
                 "D4": "D4.wav",
                 "E4": "E4.wav",
                 "F4": "F4.wav",
                 "G4": "G4.wav",
                 "A4": "A4.wav",
-                "B4": "B4.wav"
+                "B4": "B4.wav",
+                "C5": "C5.wav",
+                "D5": "D5.wav",
+                "E5": "E5.wav",
+                "F5": "F5.wav",
+                "G5": "G5.wav",
+                "A5": "A5.wav",
+                "B5": "B5.wav"
             },
             baseUrl: "./Recorder-result/",
             attack: 0.03,
