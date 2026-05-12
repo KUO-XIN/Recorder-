@@ -37,6 +37,8 @@ function updateHelpContent() {
             <a href="https://www.youtube.com/watch?v=miIk106wNNI" target="_blank">
                     \u7BC4\u4F8B\u5F71\u7247
             </a>
+            <br><br>
+            <p>Finger Chart:</p>
             <img 
                 src="picture/figer chart.png" 
                 alt="Fingering Chart"
