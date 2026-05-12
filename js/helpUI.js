@@ -37,6 +37,11 @@ function updateHelpContent() {
             <a href="https://www.youtube.com/watch?v=miIk106wNNI" target="_blank">
                     \u7BC4\u4F8B\u5F71\u7247
             </a>
+            <img 
+                src="picture/finger chart.png" 
+                alt="Fingering Chart"
+                width="400"
+            >
         `;
     } else {
         helpContent.innerHTML = `
