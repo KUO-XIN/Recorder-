@@ -18,7 +18,7 @@ export function isNearTip(tip, refTip, threshold = 0.05) {
     if (state === undefined) state = false;
 
     // 進出使用不同門檻（hysteresis）
-    const enterThreshold = threshold * 1.35; // 要「更明確」才變成 true
+    const enterThreshold = threshold * 1.30; // 要「更明確」才變成 true
     const exitThreshold = threshold * 0.85; // 要「更明確」才變回 false
 
     if (!state && dist > enterThreshold) {
