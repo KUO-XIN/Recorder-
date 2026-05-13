@@ -1,10 +1,10 @@
-// ¨Ï¥Î Mediapipe face mesh ¸`ÂI­pºâ¼L¤Ú¶}¦X
+// ä½¿ç”¨ Mediapipe face mesh ç¯€é»è¨ˆç®—å˜´å·´é–‹åˆ
 const upper_lip_external_indexes = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291];
 const lower_lip_external_indexes = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291];
 const upper_lip_internal_indexes = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308];
 const lower_lip_internal_indexes = [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308];
-let baseMouthWidth = null;   // ©ñÃP¼L«¬ªº°ò·Ç
-let smoothVolume = 0;        // ¥­·Æ«á­µ¶q
+let baseMouthWidth = null;   // æ”¾é¬†å˜´å‹çš„åŸºæº–
+let smoothVolume = 0;        // å¹³æ»‘å¾ŒéŸ³é‡
 
 function distance(a, b) {
     const dx = a.x - b.x;
@@ -15,7 +15,7 @@ function distance(a, b) {
 export function isMouthOpen(landmarks) {
     if (!landmarks) return false;
 
-    // ¨ú¤W®B¤U¤è¡B¤U®B¤W¤è§@¶ZÂ÷
+    // å–ä¸Šå”‡ä¸‹æ–¹ã€ä¸‹å”‡ä¸Šæ–¹ä½œè·é›¢
     const upper = landmarks[13] || landmarks[0];
     const lower = landmarks[14] || landmarks[0];
 
@@ -27,7 +27,7 @@ export function isMouthOpen(landmarks) {
 
     const ratio = vertical / horizontal;
 
-    return ratio > 0.06; // ìH­È¡A¥i¨Ì¤H½Õ¾ã
+    return ratio > 0.06; // é–¾å€¼ï¼Œå¯ä¾äººèª¿æ•´
 }
 
 export function getMouthVolume(landmarks) {
@@ -43,39 +43,39 @@ export function getMouthVolume(landmarks) {
 
     const openRatio = vertical / horizontal;
 
-    // --- ¨S±i¼L ¡÷ ¨SÁn­µ¡]§¹¥ş«O¯d­ì¥»ÅŞ¿è¡^ ---
-    if (openRatio < 0.06) {
+    // --- æ²’å¼µå˜´ â†’ æ²’è²éŸ³ï¼ˆå®Œå…¨ä¿ç•™åŸæœ¬é‚è¼¯ï¼‰ ---
+    if (openRatio < 0.1) {
         baseMouthWidth = null;
         smoothVolume = 0;
         return 0;
     }
 
-    // --- ­è¶}©l±i¼L®É°O¿ı°ò·Ç ---
+    // --- å‰›é–‹å§‹å¼µå˜´æ™‚è¨˜éŒ„åŸºæº– ---
     if (baseMouthWidth === null) {
         baseMouthWidth = horizontal;
     }
 
-    // --- ¼L¨¤¥~¼µ¡]¥D±±¨î¡^ ---
+    // --- å˜´è§’å¤–æ’ï¼ˆä¸»æ§åˆ¶ï¼‰ ---
     let strength = (horizontal - baseMouthWidth) / baseMouthWidth;
     strength = Math.max(0, strength);
 
-    // ¡¹ ©ñ¤jÅv­«¡]ÃöÁä¡^
+    // â˜… æ”¾å¤§æ¬Šé‡ï¼ˆé—œéµï¼‰
     strength *= 3.0;
 
-    // --- ¼L¤Ú¶}¦X»²§U¡]¤p¥[¦¨¡^ ---
+    // --- å˜´å·´é–‹åˆè¼”åŠ©ï¼ˆå°åŠ æˆï¼‰ ---
     const openBoost = Math.min(openRatio / 0.12, 1); // 0~1
 
-    // --- ¦X¦¨§j®ğ±j«× ---
+    // --- åˆæˆå¹æ°£å¼·åº¦ ---
     let combined = strength * 0.8 + openBoost * 0.2;
 
-    // --- ¼Ö¾¹·P¦±½u¡]«e¬q§ó©úÅã¡^ ---
+    // --- æ¨‚å™¨æ„Ÿæ›²ç·šï¼ˆå‰æ®µæ›´æ˜é¡¯ï¼‰ ---
     let volume = Math.pow(combined, 1.2);
 
-    // --- ¤W­­ ---
+    // --- ä¸Šé™ ---
     const MAX_VOLUME = 0.9;
     volume = Math.min(volume, MAX_VOLUME);
 
-    // --- ¥­·Æ ---
+    // --- å¹³æ»‘ ---
     smoothVolume = smoothVolume * 0.75 + volume * 0.25;
 
     return smoothVolume;
