@@ -3,7 +3,7 @@
 const nearStateMemory = new Map();
 
 let lastUpdate = 0;
-const MIN_INTERVAL = 250; // 防止過快觸發
+const MIN_INTERVAL = 350; // 防止過快觸發
 
 // 手勢狀態機（避免手指一直開著連續觸發）
 let gestureArmed = true;
